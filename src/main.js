@@ -35,7 +35,7 @@ function readStocks() {
             throw err;
 
         stocks = data.split('\r\n');
-        // console.log(stocks);
+        console.log(stocks[0]);
         mkdir();
     })
 }
@@ -73,25 +73,30 @@ function mkdir() {
 }
 
 
+let currStock = 0;
+let interval;
 function runCollection() {
     console.log('Server Initialized');
     const alpha = a({ key: key });
 
-    let currStock = 0;
-    let interval = setInterval(() => {
+    interval = setInterval(() => {
         alpha.data.intraday(stocks[currStock]).then(data => {
             fs.appendFile('src/data/' + formattedDate + '/' + stocks[currStock] + '.json', JSON.stringify(data), (err, data) => {
                 if (err)
                     console.log(err);
             });
             console.log('[' + new Date() + '] Successfully fetched data for ' + stocks[currStock]);
+            incrementCollection();
         });
-        currStock++;
-        if (currStock >= stocks.length) {
-            clearInterval(interval);
-            console.log('Data collection complete');
-        }
+       
 
     }, TIME_INTERVAL);
 }
 
+function incrementCollection() {
+    currStock++;
+    if (currStock >= stocks.length) {
+        clearInterval(interval);
+        console.log('Data collection complete');
+    }
+}
