@@ -14,7 +14,7 @@ const TIME_INTERVAL = 12000; //Time, in milliseconds, between each request.
 let stocks; //Array of strings for tickers
 let key;
 let today = new Date();
-let formattedDate = [today.getFullYear(), today.getMonth(), today.getDay()].join('-');
+let formattedDate = [today.getFullYear(), today.getMonth() + 1, today.getDate()].join('-');
 
 readKey();
 
@@ -35,7 +35,6 @@ function readStocks() {
             throw err;
 
         stocks = data.split('\r\n');
-        console.log(stocks[0]);
         mkdir();
     })
 }
