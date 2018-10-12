@@ -5,39 +5,53 @@
  * Contributions: Alexey Kolechkin
  */
 
- import * as fs from 'fs';
- import a from 'alphavantage';
- import {exec} from 'child_process';
- import * as readline from 'readline';
+import * as fs from 'fs';
+import a from 'alphavantage';
+import { exec } from 'child_process';
+import * as readline from 'readline';
 
- const TIME_INTERVAL = 12000; //Time, in milliseconds, between each request.
- const alpha = a({key: 'key'});
- let stocks; //Array of strings for tickers
+const TIME_INTERVAL = 12000; //Time, in milliseconds, between each request.
+let stocks; //Array of strings for tickers
+let key;
+let today = new Date();
+let formattedDate = [today.getFullYear(), today.getMonth(), today.getDay()].join('-');
 
-console.log('Reading stock ticker list');
-fs.readFile('./src/SP_500_List.txt', 'utf8', (err, data) => {
-    if(err)
-        throw err;
+readKey();
 
-    stocks = data;
-})
+function readKey() {
+    fs.readFile('./key.txt', 'utf8', (err, data) => {
+        console.log('Loading key.txt');
+        if (err)
+            throw err;
+        key = data;
+        readStocks();
+    })
+}
 
-mkdir();
+function readStocks() {
+    fs.readFile('./src/SP_500_List.txt', 'utf8', (err, data) => {
+        console.log('Reading stock ticker list');
+        if (err)
+            throw err;
 
-console.log('Creating data directory');
+        stocks = data.split('\r\n');
+        // console.log(stocks);
+        mkdir();
+    })
+}
+
 function mkdir() {
-    let today = new Date();
-    let formattedDate = [today.getFullYear(), today.getMonth(), today.getDay()].join('-');
-    console.log('Today is ' + formattedDate);
-    exec ('mkdir ' + 'src/data/' + formattedDate, (err, stdout, stderr) => {
-        if(stderr)
-            if(stderr.toString().includes('cannot create directory')) {
+    exec('mkdir ' + 'src/data/' + formattedDate, (err, stdout, stderr) => {
+        if (stderr)
+            if (stderr.toString().includes('cannot create directory')) {
                 const r1 = readline.createInterface({
-                    input: process.stdin, 
+                    input: process.stdin,
                     output: process.stdout
                 });
+                console.log('Today is ' + formattedDate);
+                console.log('Creating data directory');
                 r1.question('Directory already exists. Overwrite? (y/N)\n', (answer) => {
-                    if(answer === 'y') {
+                    if (answer === 'y') {
                         exec('rm -r ' + 'src/data/' + formattedDate, () => {
                             exec('mkdir ' + 'src/data/' + formattedDate, () => {
                                 r1.close();
@@ -61,21 +75,23 @@ function mkdir() {
 
 function runCollection() {
     console.log('Server Initialized');
-    
+    const alpha = a({ key: key });
+
     let currStock = 0;
     let interval = setInterval(() => {
-        console.log('Fetching data for ');
-        // alpha.data.intraday(`msft`).then(data => {
-            //     console.log(data);
-            // });
+        alpha.data.intraday(stocks[currStock]).then(data => {
+            fs.appendFile('src/data/' + formattedDate + '/' + stocks[currStock] + '.json', JSON.stringify(data), (err, data) => {
+                if (err)
+                    console.log(err);
+            });
+            console.log('[' + new Date() + '] Successfully fetched data for ' + stocks[currStock]);
+        });
         currStock++;
-        console.log(stocks.length);
-        console.log(currStock);
-        if(currStock >= stocks.length) {
+        if (currStock >= stocks.length) {
             clearInterval(interval);
             console.log('Data collection complete');
         }
-        
+
     }, TIME_INTERVAL);
 }
 
