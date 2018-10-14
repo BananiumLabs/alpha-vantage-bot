@@ -63,10 +63,11 @@ function mkdir() {
                 })
 
             }
-            else throw new Error(stderr);
+            else 
+                throw stderr;
         }
         else if (err)
-            throw new Error(err);
+            throw err;
         else
             runCollection();
     });
@@ -82,7 +83,7 @@ function runCollection() {
     interval = setInterval(() => {
         alpha.data.intraday(stocks[currStock]).then(data => {
             fs.appendFile('src/data/' + formattedDate + '/' + stocks[currStock] + '.json', JSON.stringify(data), (err, data) => {
-                if (!err)
+                if (err)
                     console.log(err);
                 else {
                     console.log('[' + new Date() + '] Successfully fetched data for ' + stocks[currStock]);
