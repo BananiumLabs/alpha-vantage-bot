@@ -42,7 +42,7 @@ function readStocks() {
 function mkdir() {
     console.log('Today is ' + formattedDate);
     console.log('Creating data directory');
-    fs.mkdir('mkdir ' + 'src/data/' + formattedDate, (err) => {
+    fs.mkdir('src/data/' + formattedDate, (err) => {
         if(err) {
             // Dir already exists
             if(err.errno === -17) {
