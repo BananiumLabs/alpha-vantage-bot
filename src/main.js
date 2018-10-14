@@ -45,7 +45,7 @@ function mkdir() {
     fs.mkdir('src/data/' + formattedDate, (err) => {
         if(err) {
             // Dir already exists
-            if(err.errno === -17) {
+            if(err.errno === -17 || ('' + err).includes('EEXIST')) {
                 const r1 = readline.createInterface({
                         input: process.stdin,
                         output: process.stdout
