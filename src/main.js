@@ -7,8 +7,8 @@
 
 import * as fs from 'fs';
 import a from 'alphavantage';
-import { exec } from 'child_process';
 import * as readline from 'readline';
+import rimraf from 'rimraf';
 
 const TIME_INTERVAL = 12000; //Time, in milliseconds, between each request.
 let stocks; //Array of strings for tickers
@@ -42,17 +42,22 @@ function readStocks() {
 function mkdir() {
     console.log('Today is ' + formattedDate);
     console.log('Creating data directory');
-    exec('mkdir ' + 'src/data/' + formattedDate, (err, stdout, stderr) => {
-        if (stderr) {
-            if (stderr.toString().includes('cannot create directory')) {
+    fs.mkdir('mkdir ' + 'src/data/' + formattedDate, (err) => {
+        if(err) {
+            // Dir already exists
+            if(err.errno === -17) {
                 const r1 = readline.createInterface({
-                    input: process.stdin,
-                    output: process.stdout
+                        input: process.stdin,
+                        output: process.stdout
                 });
                 r1.question('Directory already exists. Overwrite? (y/N)\n', (answer) => {
                     if (answer === 'y') {
-                        exec('rm -r ' + 'src/data/' + formattedDate, () => {
-                            exec('mkdir ' + 'src/data/' + formattedDate, () => {
+                        rimraf('src/data/' + formattedDate, (err) => {
+                            if(err)
+                                throw err;
+                            fs.mkdir('src/data/' + formattedDate, (err) => {
+                                if(err)
+                                    throw err;
                                 r1.close();
                                 runCollection();
                             });
@@ -60,16 +65,14 @@ function mkdir() {
                     }
                     else
                         console.log('Exiting...');
-                })
-
+                });
             }
-            else 
-                throw new Error('ERROR: ' + stderr);
+            else
+                throw err;
         }
-        else if (err)
-            throw err;
         else
             runCollection();
+            
     });
 }
 
