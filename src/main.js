@@ -64,7 +64,7 @@ function mkdir() {
 
             }
             else 
-                throw stderr;
+                throw new Error('ERROR: ' + stderr);
         }
         else if (err)
             throw err;
