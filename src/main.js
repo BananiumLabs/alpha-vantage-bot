@@ -40,6 +40,8 @@ function readStocks() {
 }
 
 function mkdir() {
+    console.log('Today is ' + formattedDate);
+    console.log('Creating data directory');
     exec('mkdir ' + 'src/data/' + formattedDate, (err, stdout, stderr) => {
         if (stderr)
             if (stderr.toString().includes('cannot create directory')) {
@@ -47,8 +49,6 @@ function mkdir() {
                     input: process.stdin,
                     output: process.stdout
                 });
-                console.log('Today is ' + formattedDate);
-                console.log('Creating data directory');
                 r1.question('Directory already exists. Overwrite? (y/N)\n', (answer) => {
                     if (answer === 'y') {
                         exec('rm -r ' + 'src/data/' + formattedDate, () => {
@@ -81,13 +81,15 @@ function runCollection() {
     interval = setInterval(() => {
         alpha.data.intraday(stocks[currStock]).then(data => {
             fs.appendFile('src/data/' + formattedDate + '/' + stocks[currStock] + '.json', JSON.stringify(data), (err, data) => {
-                if (err)
+                if (!err)
                     console.log(err);
+                else {
+                    console.log('[' + new Date() + '] Successfully fetched data for ' + stocks[currStock]);
+                    incrementCollection();
+                }
             });
-            console.log('[' + new Date() + '] Successfully fetched data for ' + stocks[currStock]);
-            incrementCollection();
         });
-       
+
 
     }, TIME_INTERVAL);
 }
