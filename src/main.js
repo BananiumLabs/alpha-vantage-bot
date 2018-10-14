@@ -43,7 +43,7 @@ function mkdir() {
     console.log('Today is ' + formattedDate);
     console.log('Creating data directory');
     exec('mkdir ' + 'src/data/' + formattedDate, (err, stdout, stderr) => {
-        if (stderr)
+        if (stderr) {
             if (stderr.toString().includes('cannot create directory')) {
                 const r1 = readline.createInterface({
                     input: process.stdin,
@@ -64,6 +64,7 @@ function mkdir() {
 
             }
             else throw new Error(stderr);
+        }
         else if (err)
             throw new Error(err);
         else
