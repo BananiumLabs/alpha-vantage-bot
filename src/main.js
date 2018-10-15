@@ -20,9 +20,13 @@ const rl = readline.createInterface({
 const DEBUG = true;
 const TIME_INTERVAL = 12000; //Time, in milliseconds, between each request.
 let stocks; //Array of strings for tickers
-let key;
+let key; // To be loaded from key.txt
+
 let today = new Date();
 let formattedDate = [today.getFullYear(), today.getMonth() + 1, today.getDate()].join('-');
+
+let currStock = 0; //current stock index
+let interval; //setInterval() reference
 
 readAPIKey();
 initCommands();
@@ -30,17 +34,37 @@ initCommands();
 function initCommands() {
     rl.prompt();
     rl.on('line', (line) => {
-        
-        switch (line.trim()) {
-            case 'help':
-                console.log('Help is on the way!');
-                break;
-            case 'exit':
-                exit(0);
-            default:
-                console.log(`Command: '${line.trim()}' is not found.`);
-                break;
+        let lineStr = '' + line.trim();
+        if(lineStr.startsWith('help')) {
+            console.log('List of commands: ');
+            console.log('exit - Stops data collection.');
+            console.log('skip - Skips specified number of entries. Usage: `skip n` where n is a number.');
         }
+        else if(lineStr.startsWith('exit'))
+            exit(0);
+        else if(lineStr.startsWith('skip')) {
+            let param = lineStr.split(' ')[1];
+            if(!isNaN(param)) {
+                console.log('Skipping ' + param + ' tickers.')
+                currStock += parseInt(param);
+                
+                if(stocks === undefined || stocks === null)
+                    console.log('Stocks have not been initialized yet. Please try again in a moment.');
+                else {
+                    if(currStock < 0 || currStock > stocks.length) {
+                        console.log('The resultant index is out of bounds: ' + currStock);
+                        exit(1);
+                    }
+                    else {
+                        console.log('Now collecting ticker ' + stocks[currStock]);
+                    }
+                }
+            }
+        }
+        else {
+            console.log('Command not found: ' + lineStr);
+        }
+
         rl.prompt();
       }).on('close', () => {
         console.log('Console CLI terminated!');
@@ -122,11 +146,10 @@ function mkdir() {
 }
 
 
-let currStock = 0;
-let interval;
 function runCollection() {
     console.log('Server Initialized');
     console.log('Enter "exit" to stop server');
+    console.log('Enter "help" for more commands');
     rl.prompt();
     const alpha = a({ key: key });
 
