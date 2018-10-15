@@ -10,21 +10,44 @@ import a from 'alphavantage';
 import * as readline from 'readline';
 import rimraf from 'rimraf';
 
+const prompt = require('prompt');
+
 const TIME_INTERVAL = 12000; //Time, in milliseconds, between each request.
 let stocks; //Array of strings for tickers
 let key;
 let today = new Date();
 let formattedDate = [today.getFullYear(), today.getMonth() + 1, today.getDate()].join('-');
 
-readKey();
+readAPIKey();
 
-function readKey() {
+// Creates key file if it does not yet exist and run readKey
+function createAPIKeyFile() {
+    prompt.start();
+    console.log("Missing API Key! Please enter the following details: ");
+    prompt.get(['apikey'], function (err, result) {
+        fs.writeFile('./key.txt', result.apikey, { flag: 'wx' }, function (err) {
+            if (err) {
+                console.err("Key file generation FAILED. Please check stacktrace.");
+                throw err;
+            }
+            else {
+                console.log("API Key stored successfully: " + result.apikey);
+                readAPIKey();
+            }
+        });
+    });
+    
+}
+function readAPIKey() {
     fs.readFile('./key.txt', 'utf8', (err, data) => {
         console.log('Loading key.txt');
-        if (err)
-            throw err;
-        key = data;
-        readStocks();
+        if (err) {
+            createAPIKeyFile();
+        }
+        else {
+            key = data;
+            readStocks();
+        }
     })
 }
 
@@ -64,7 +87,7 @@ function mkdir() {
                         });
                     }
                     else
-                        console.log('Exiting...');
+                        exit();
                 });
             }
             else
@@ -81,6 +104,7 @@ let currStock = 0;
 let interval;
 function runCollection() {
     console.log('Server Initialized');
+    console.log('Press CTRL-C to stop server');
     const alpha = a({ key: key });
 
     interval = setInterval(() => {
@@ -106,3 +130,25 @@ function incrementCollection() {
         console.log('Data collection complete');
     }
 }
+
+function exit() {
+    console.log("Exiting... Please wait.");
+    process.exit();
+}
+
+if (process.platform === "win32") {
+    var rl = require("readline").createInterface({
+        input: process.stdin,
+        output: process.stdout
+    });
+  
+    rl.on("SIGINT", function () {
+        process.emit("SIGINT");
+        console.log("Exiting... Please wait.");
+    });
+}
+  
+process.on("SIGINT", function () {
+    //graceful shutdown
+    exit();
+});
