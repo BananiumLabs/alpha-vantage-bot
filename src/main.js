@@ -9,8 +9,7 @@ import * as fs from 'fs';
 import a from 'alphavantage';
 import * as readline from 'readline';
 import rimraf from 'rimraf';
-
-const prompt = require('prompt');
+import prompt from 'prompt';
 
 const TIME_INTERVAL = 12000; //Time, in milliseconds, between each request.
 let stocks; //Array of strings for tickers
@@ -25,7 +24,7 @@ function createAPIKeyFile() {
     prompt.start();
     console.log("Missing API Key! Please enter the following details: ");
     prompt.get(['apikey'], function (err, result) {
-        fs.writeFile('./key.txt', result.apikey, { flag: 'wx' }, function (err) {
+        fs.writeFile('./key.txt', result.apikey, { flag: 'wx' }, (err) => {
             if (err) {
                 console.err("Key file generation FAILED. Please check stacktrace.");
                 throw err;
@@ -108,6 +107,8 @@ function runCollection() {
     const alpha = a({ key: key });
 
     interval = setInterval(() => {
+        
+
         alpha.data.intraday(stocks[currStock]).then(data => {
             fs.appendFile('src/data/' + formattedDate + '/' + stocks[currStock] + '.json', JSON.stringify(data), (err, data) => {
                 if (err)
@@ -117,7 +118,19 @@ function runCollection() {
                     incrementCollection();
                 }
             });
+        }).catch((err) => {
+            // Overloaded API calls is a safe error, ignore this.
+            if (('' + err).includes('higher API')) {
+                console.log('Max API calls exceeded while fetching ' + stocks[currStock] + ', make sure you have the correct TIME_INTERVAL and only have one instance running!')
+            }
+            else {
+                console.log('Critical error fetching stock ' + stocks[currStock] + ': ' + err);
+                console.log(stocks[currStock] + ' has been skipped.');
+                incrementCollection();
+            }
         });
+
+
 
 
     }, TIME_INTERVAL);
