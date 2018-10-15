@@ -2,7 +2,7 @@
 
 Collects data on intraday statistics and stores locally.
 
-Developed by [Ben Cuan](https://github.com/dbqeo) and [Alexey Kolechkin](https://github.com/kuxxe)
+Developed by [Ben Cuan](https://github.com/dbqeo), [Alexey Kolechkin](https://github.com/kuxxe), and [Eric Qian](https://github.com/enumc)
 
 ## Running locally
 
