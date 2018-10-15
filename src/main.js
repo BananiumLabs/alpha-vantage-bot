@@ -9,8 +9,15 @@ import * as fs from 'fs';
 import a from 'alphavantage';
 import * as readline from 'readline';
 import rimraf from 'rimraf';
-import prompt from 'prompt';
+import * as prompt from 'prompt';
 
+const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+    prompt: 'console> '
+  });
+
+const DEBUG = true;
 const TIME_INTERVAL = 12000; //Time, in milliseconds, between each request.
 let stocks; //Array of strings for tickers
 let key;
@@ -18,6 +25,27 @@ let today = new Date();
 let formattedDate = [today.getFullYear(), today.getMonth() + 1, today.getDate()].join('-');
 
 readAPIKey();
+initCommands();
+
+function initCommands() {
+    rl.prompt();
+    rl.on('line', (line) => {
+        
+        switch (line.trim()) {
+            case 'help':
+                console.log('Help is on the way!');
+                break;
+            case 'exit':
+                exit(0);
+            default:
+                console.log(`Command: '${line.trim()}' is not found.`);
+                break;
+        }
+        rl.prompt();
+      }).on('close', () => {
+        console.log('Console CLI terminated!');
+      });
+}
 
 // Creates key file if it does not yet exist and run readKey
 function createAPIKeyFile() {
@@ -68,11 +96,7 @@ function mkdir() {
         if(err) {
             // Dir already exists
             if(err.errno === -17 || ('' + err).includes('EEXIST')) {
-                const r1 = readline.createInterface({
-                        input: process.stdin,
-                        output: process.stdout
-                });
-                r1.question('Directory already exists. Overwrite? (y/N)\n', (answer) => {
+                rl.question('Directory already exists. Overwrite? (y/N)\n', (answer) => {
                     if (answer === 'y') {
                         rimraf('src/data/' + formattedDate, (err) => {
                             if(err)
@@ -80,7 +104,6 @@ function mkdir() {
                             fs.mkdir('src/data/' + formattedDate, (err) => {
                                 if(err)
                                     throw err;
-                                r1.close();
                                 runCollection();
                             });
                         });
@@ -103,7 +126,8 @@ let currStock = 0;
 let interval;
 function runCollection() {
     console.log('Server Initialized');
-    console.log('Press CTRL-C to stop server');
+    console.log('Enter "exit" to stop server');
+    rl.prompt();
     const alpha = a({ key: key });
 
     interval = setInterval(() => {
@@ -114,7 +138,8 @@ function runCollection() {
                 if (err)
                     console.log(err);
                 else {
-                    console.log('[' + new Date() + '] Successfully fetched data for ' + stocks[currStock]);
+                    if (DEBUG)
+                        console.log('[' + new Date() + '] Successfully fetched data for ' + stocks[currStock]);
                     incrementCollection();
                 }
             });
@@ -144,16 +169,12 @@ function incrementCollection() {
     }
 }
 
-function exit() {
-    console.log("Exiting... Please wait.");
-    process.exit();
+function exit(code) {
+    console.log("Program is cleaning up... Please wait.");
+    process.exit(code);
 }
 
 if (process.platform === "win32") {
-    var rl = require("readline").createInterface({
-        input: process.stdin,
-        output: process.stdout
-    });
   
     rl.on("SIGINT", function () {
         process.emit("SIGINT");
@@ -163,5 +184,5 @@ if (process.platform === "win32") {
   
 process.on("SIGINT", function () {
     //graceful shutdown
-    exit();
+    exit(0);
 });
