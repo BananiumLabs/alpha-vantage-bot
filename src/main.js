@@ -18,7 +18,7 @@ const rl = readline.createInterface({
   });
 
 const DEBUG = true;
-const TIME_INTERVAL = 12000; //Time, in milliseconds, between each request.
+const TIME_INTERVAL = 16000; //Time, in milliseconds, between each request.
 let stocks; //Array of strings for tickers
 let key; // To be loaded from key.txt
 
