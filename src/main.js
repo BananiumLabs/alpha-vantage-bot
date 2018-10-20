@@ -19,6 +19,8 @@ const rl = readline.createInterface({
 
 const DEBUG = true;
 const TIME_INTERVAL = 16000; //Time, in milliseconds, between each request.
+const ERROR_LIMIT = 4; //places a limit on how many errors are allowed per ticker before proceeding to the next
+let errorCounter = 0; //counts the amount of retries for each ticker, whether to move on or not
 let stocks; //Array of strings for tickers
 let key; // To be loaded from key.txt
 
@@ -173,8 +175,11 @@ function runCollection() {
             }
             else {
                 console.log('Critical error fetching stock ' + stocks[currStock] + ': ' + err);
-                console.log(stocks[currStock] + ' has been skipped.');
-                incrementCollection();
+                errorCounter++;
+                if(errorCounter>=ERROR_LIMIT){
+                    console.log(stocks[currStock] + ' has been skipped.');
+                    incrementCollection();
+                }
             }
         });
 
@@ -186,6 +191,7 @@ function runCollection() {
 
 function incrementCollection() {
     currStock++;
+    errorCounter = 0;
     if (currStock >= stocks.length) {
         clearInterval(interval);
         console.log('Data collection complete');
