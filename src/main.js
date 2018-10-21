@@ -105,7 +105,7 @@ function readAPIKey() {
 }
 
 function readStocks() {
-    fs.readFile('./src/SP_500_List.txt', 'utf8', (err, data) => {
+    fs.readFile('./src/Ticker_List.txt', 'utf8', (err, data) => {
         console.log('Reading stock ticker list');
         if (err)
             throw err;
@@ -122,8 +122,8 @@ function mkdir() {
         if(err) {
             // Dir already exists
             if(err.errno === -17 || ('' + err).includes('EEXIST')) {
-                rl.question('Directory already exists. Overwrite? (y/N)\n', (answer) => {
-                    if (answer === 'y') {
+                rl.question('Directory already exists. Overwrite? (Y/N)\n', (answer) => {
+                    if (answer === 'y' || 'Y') {
                         rimraf('src/data/' + formattedDate, (err) => {
                             if(err)
                                 throw err;
