@@ -16,6 +16,11 @@ const rl = readline.createInterface({
     output: process.stdout,
     prompt: 'console> '
   });
+const rl2 = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+    prompt: 'console> '
+});
 
 const DEBUG = true;
 const TIME_INTERVAL = 16000; //Time, in milliseconds, between each request.
@@ -25,7 +30,8 @@ let stocks; //Array of strings for tickers
 let key; // To be loaded from key.txt
 
 let today = new Date();
-let formattedDate = [today.getFullYear(), today.getMonth() + 1, today.getDate()].join('-');
+let weekDay = today.getDay();
+let formattedDate = [today.getFullYear(), today.getMonth() + 1, today.getDate(), checkDayOfWeek()].join('-');
 
 let currStock = 0; //current stock index
 let interval; //setInterval() reference
@@ -115,15 +121,35 @@ function readStocks() {
     })
 }
 
+function checkDayOfWeek() {
+    let weekDayWord = new Array(7);
+    weekDayWord[0] = "Sunday";
+    weekDayWord[1] = "Monday";
+    weekDayWord[2] = "Tuesday";
+    weekDayWord[3] = "Wednesday";
+    weekDayWord[4] = "Thursday";
+    weekDayWord[5] = "Friday";
+    weekDayWord[6] = "Saturday";
+
+    return weekDayWord[weekDay];
+}
+
 function mkdir() {
     console.log('Today is ' + formattedDate);
     console.log('Creating data directory');
     fs.mkdir('src/data/' + formattedDate, (err) => {
+        if (weekDay===0||weekDay===6) {
+            rl2.question('Today is ' + checkDayOfWeek() + ', data will only be downloaded for Friday since the market is closed. Proceed? (y/N)\n', (answer) => {
+                if (answer !== 'y') {
+                    exit();
+                }
+            });
+        }
         if(err) {
             // Dir already exists
             if(err.errno === -17 || ('' + err).includes('EEXIST')) {
-                rl.question('Directory already exists. Overwrite? (Y/N)\n', (answer) => {
-                    if (answer === 'y' || 'Y') {
+                rl.question('Directory already exists. Overwrite? (y/N)\n', (answer) => {
+                    if (answer === 'y') {
                         rimraf('src/data/' + formattedDate, (err) => {
                             if(err)
                                 throw err;
