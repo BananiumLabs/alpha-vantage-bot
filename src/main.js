@@ -184,7 +184,7 @@ function runCollection() {
     interval = setInterval(() => {
         
 
-        alpha.data.intraday(stocks[currStock]).then(data => {
+        alpha.data.intraday(stocks[currStock], 'full').then(data => {
             fs.appendFile('src/data/' + formattedDate + '/' + stocks[currStock] + '.json', JSON.stringify(data), (err, data) => {
                 if (err)
                     console.log(err);
