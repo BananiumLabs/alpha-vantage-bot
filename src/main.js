@@ -24,7 +24,7 @@ const rl2 = readline.createInterface({
 
 const DEBUG = true;
 const TIME_INTERVAL = 16000; //Time, in milliseconds, between each request.
-const ERROR_LIMIT = 4; //places a limit on how many errors are allowed per ticker before proceeding to the next
+const ERROR_LIMIT = 3; //places a limit on how many errors are allowed per ticker before proceeding to the next
 let errorCounter = 0; //counts the amount of retries for each ticker, whether to move on or not
 let stocks; //Array of strings for tickers
 let key; // To be loaded from key.txt
