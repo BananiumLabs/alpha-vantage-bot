@@ -198,6 +198,7 @@ function runCollection() {
             // Overloaded API calls is a safe error, ignore this.
             if (('' + err).includes('higher API')) {
                 console.log('Max API calls exceeded while fetching ' + stocks[currStock] + ', make sure you have the correct TIME_INTERVAL and only have one instance running!')
+                exit();
             }
             else {
                 console.log('Critical error fetching stock ' + stocks[currStock] + ': ' + err);
